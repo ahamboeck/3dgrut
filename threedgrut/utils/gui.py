@@ -435,6 +435,9 @@ class GUI:
 
             _, self.viz_render_train_view = psim.Checkbox("render w/ train=True", self.viz_render_train_view)
 
+            psim.PopItemWidth()
+            psim.TreePop()
+
         if self.live_update:
             self.update_render_view_viz()
 

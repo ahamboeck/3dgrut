@@ -53,6 +53,8 @@ def setup_lib_optimizers_cc():
         cflags = [f"/std:c++{cpp_standard}", "/DNOMINMAX"]
 
     include_paths = [root_dir]
+    if os.path.exists("/usr/local/cuda/include"):
+        include_paths.append("/usr/local/cuda/include")
 
     # Linker options.
     if os.name == "posix":

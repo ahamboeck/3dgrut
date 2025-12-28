@@ -107,6 +107,7 @@ class MCMCStrategy(BaseStrategy):
 
     @torch.no_grad()
     def relocate_gaussians(self) -> None:
+        total_before = int(self.model.num_gaussians)
         # Get the per Gaussian densities and scales (after sigmoid)
         densities = self.model.get_density()
         # Find the dead indices
@@ -132,12 +133,15 @@ class MCMCStrategy(BaseStrategy):
             self._update_param_with_optimizer(update_param_fn, update_optimizer_fn)
 
         if self.conf.strategy.print_stats:
-            logger.info(f"Relocated {n_dead_gaussians} ({n_dead_gaussians / len(densities) * 100:.2f}%) gaussians")
+            logger.info(
+                f"Relocated {n_dead_gaussians} ({n_dead_gaussians / len(densities) * 100:.2f}%) gaussians "
+                f"[total={total_before}]."
+            )
 
     @torch.no_grad()
     def add_new_gaussians(self) -> None:
         # Get the current number of gaussians
-        current_num_gaussians = self.model.num_gaussians
+        current_num_gaussians = int(self.model.num_gaussians)
         target_num_gaussians = min(self.conf.strategy.add.max_n_gaussians, int(1.05 * current_num_gaussians))
         num_gaussians_to_add = max(0, target_num_gaussians - current_num_gaussians)
 
@@ -158,9 +162,12 @@ class MCMCStrategy(BaseStrategy):
 
             self._update_param_with_optimizer(update_param_fn, update_optimizer_fn)
 
+        total_after = int(self.model.num_gaussians)
+
         if self.conf.strategy.print_stats:
             logger.info(
-                f"Added {num_gaussians_to_add} ({num_gaussians_to_add / current_num_gaussians * 100:.2f}%) gaussians"
+                f"Added {num_gaussians_to_add} ({num_gaussians_to_add / max(1, current_num_gaussians) * 100:.2f}%) gaussians "
+                f"[total={total_after}, target={target_num_gaussians}, max={self.conf.strategy.add.max_n_gaussians}]."
             )
 
     @torch.no_grad()
